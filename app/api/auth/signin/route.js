@@ -29,6 +29,9 @@ CREATE TABLE IF NOT EXISTS users (
   is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN NOT NULL DEFAULT FALSE`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`;
 
     const rows = await sql`SELECT id, email, password_hash, role, is_blocked FROM users WHERE email = ${email} LIMIT 1`;
     if (rows.length === 0) {

@@ -36,6 +36,9 @@ CREATE TABLE IF NOT EXISTS users (
   is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN NOT NULL DEFAULT FALSE`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`;
 
     const found = await sql`SELECT id FROM users WHERE email = ${email} LIMIT 1`;
     if (found.length > 0) {

@@ -3,6 +3,11 @@ import { getSql } from "../../../lib/db.js";
 import { getCurrentUser } from "../../../lib/auth.js";
 import { isValidCropName, cleanText } from "../../../lib/validate.js";
 
+async function userExists(sql, userId) {
+  const rows = await sql`SELECT id FROM users WHERE id = ${userId} LIMIT 1`;
+  return rows.length > 0;
+}
+
 async function ensure(sql) {
   await sql`
 CREATE TABLE IF NOT EXISTS users (
@@ -29,7 +34,15 @@ export async function GET() {
   try {
     const sql = getSql();
     await ensure(sql);
-    const rows = await sql`SELECT id, name, details FROM crops WHERE user_id = ${Number(user.id)} ORDER BY created_at DESC LIMIT 50`;
+    const userId = Number(user.id);
+    if (!Number.isInteger(userId)) {
+      return NextResponse.json({ error: "Please sign out and sign in again." }, { status: 401 });
+    }
+    const ok = await userExists(sql, userId);
+    if (!ok) {
+      return NextResponse.json({ error: "Please sign out and sign in again." }, { status: 401 });
+    }
+    const rows = await sql`SELECT id, name, details FROM crops WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 50`;
     return NextResponse.json({ crops: rows });
   } catch (e) {
     return NextResponse.json({ error: "Could not load crops." }, { status: 500 });
@@ -48,7 +61,15 @@ export async function POST(req) {
     }
     const sql = getSql();
     await ensure(sql);
-    const rows = await sql`INSERT INTO crops (user_id, name, details) VALUES (${Number(user.id)}, ${name}, ${details}) RETURNING id, name, details`;
+    const userId = Number(user.id);
+    if (!Number.isInteger(userId)) {
+      return NextResponse.json({ error: "Please sign out and sign in again." }, { status: 401 });
+    }
+    const ok = await userExists(sql, userId);
+    if (!ok) {
+      return NextResponse.json({ error: "Please sign out and sign in again." }, { status: 401 });
+    }
+    const rows = await sql`INSERT INTO crops (user_id, name, details) VALUES (${userId}, ${name}, ${details}) RETURNING id, name, details`;
     return NextResponse.json({ crop: rows[0] });
   } catch (e) {
     return NextResponse.json({ error: "Could not save crop." }, { status: 500 });
