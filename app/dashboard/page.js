@@ -114,6 +114,12 @@ CREATE TABLE IF NOT EXISTS checks (
       </div>
 
       <div className="rounded-2xl bg-white p-6 shadow">
+        <Link href="/history" className="block w-full rounded-xl border-2 border-green-700 px-4 py-4 text-center text-lg font-bold text-green-800">
+          📋 History - See all checks
+        </Link>
+      </div>
+
+      <div className="rounded-2xl bg-white p-6 shadow">
         <SignOutButton />
       </div>
     </div>
