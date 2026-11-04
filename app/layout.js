@@ -15,13 +15,13 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className="min-h-screen bg-green-50 text-slate-900">
         <header className="bg-green-700 text-white">
-          <div className="mx-auto flex max-w-md items-center justify-between px-4 py-4">
-            <span className="text-xl font-bold">🌱 FarmDoctor</span>
-            <div className="flex gap-2">
-              <a href="/dashboard" className="rounded-lg bg-green-600 px-4 py-3 font-bold text-white">
+          <div className="mx-auto flex max-w-md flex-wrap items-center justify-between gap-2 px-4 py-3">
+            <span className="text-lg font-bold">🌱 FarmDoctor</span>
+            <div className="flex flex-wrap gap-2">
+              <a href="/dashboard" className="flex min-h-[48px] items-center rounded-lg bg-green-600 px-4 py-3 font-bold text-white">
                 My farm
               </a>
-              <a href="/signin" className="rounded-lg bg-white px-4 py-3 font-bold text-green-800">
+              <a href="/signin" className="flex min-h-[48px] items-center rounded-lg bg-white px-4 py-3 font-bold text-green-800">
                 Sign in
               </a>
             </div>

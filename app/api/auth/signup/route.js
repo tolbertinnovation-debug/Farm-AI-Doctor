@@ -61,6 +61,10 @@ CREATE TABLE IF NOT EXISTS users (
     return res;
   } catch (err) {
     console.error(err);
+    const m = err && err.message ? String(err.message) : "";
+    if (m.includes("AUTH_SECRET") || m.includes("DATABASE_URL")) {
+      return NextResponse.json({ error: m }, { status: 500 });
+    }
     return NextResponse.json({ error: "Sorry, we could not create the account. Try again." }, { status: 500 });
   }
 }

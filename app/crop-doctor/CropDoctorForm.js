@@ -14,16 +14,23 @@ export default function CropDoctorForm() {
     const f = e.target.files && e.target.files[0];
     setResult(null);
     setError("");
+    if (preview) {
+      try { URL.revokeObjectURL(preview); } catch {}
+    }
     if (!f) {
       setPhoto(null);
       setPreview("");
       return;
     }
     if (!f.type.startsWith("image/")) {
+      setPhoto(null);
+      setPreview("");
       setError("Pick a photo (JPG or PNG).");
       return;
     }
     if (f.size > 4 * 1024 * 1024) {
+      setPhoto(null);
+      setPreview("");
       setError("Photo is too big. Pick one under 4 MB.");
       return;
     }
@@ -70,7 +77,7 @@ export default function CropDoctorForm() {
           <label htmlFor="cropName" className="font-bold">Crop name (optional)</label>
           <input id="cropName" value={cropName} onChange={(e) => setCropName(e.target.value)} placeholder="Cassava" className="mt-1 w-full rounded-xl border p-4 text-lg" />
         </div>
-        {error ? <p className="rounded-xl bg-red-50 p-3 text-red-700">{error}</p> : null}
+        {error ? <p role="alert" className="rounded-xl bg-red-50 p-3 text-red-700">{error}</p> : null}
         <button type="submit" disabled={loading} className="w-full rounded-xl bg-green-700 px-4 py-4 text-lg font-bold text-white disabled:opacity-50">
           {loading ? "Checking leaf..." : "Check my crop"}
         </button>
