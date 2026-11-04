@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "../../lib/auth.js";
-import AssistantChat from "./AssistantChat.js";
+import ChatSessions from "./ChatSessions.js";
 
 export default async function AssistantPage() {
   const user = await getCurrentUser();
@@ -14,7 +14,7 @@ export default async function AssistantPage() {
         <h1 className="text-2xl font-bold text-green-800">Farm Assistant 💬</h1>
         <p className="mt-1 text-lg">Ask, talk, or add a paper. I answer in simple words.</p>
         <div className="mt-4">
-          <AssistantChat />
+          <ChatSessions />
         </div>
       </div>
       <Link href="/dashboard" className="block w-full rounded-xl border-2 border-green-700 px-4 py-4 text-center text-lg font-bold text-green-800">
