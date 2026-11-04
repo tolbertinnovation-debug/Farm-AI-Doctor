@@ -18,14 +18,15 @@ test("animal spark message holds the photo", () => {
   assert.equal(msgs[1].content[1].image_url.url, "data:image/jpeg;base64,abc");
 });
 
-test("animal wonder message holds the signs", () => {
-  const msgs = buildWonderMessages("not eating, cough", "Goat");
-  assert.match(msgs[1].content, /not eating/);
+test("animal wonder message holds the description", () => {
+  const msgs = buildWonderMessages("cough and runny nose", "Goat");
+  assert.match(msgs[1].content, /cough and runny nose/);
 });
 
-test("animal answer is parsed", () => {
-  const r = parseWonderResult('{"cause":"Worms","firstAid":"Give clean water","callVet":"If weak after 2 days","confidence":"medium"}');
-  assert.equal(r.cause, "Worms");
-  assert.equal(r.callVet, "If weak after 2 days");
+test("animal wonder answer is parsed", () => {
+  const r = parseWonderResult('{"cause":"Cold","firstAid":"Keep warm, give water","callVet":"If not eating","confidence":"medium"}');
+  assert.equal(r.cause, "Cold");
+  assert.equal(r.firstAid, "Keep warm, give water");
+  assert.equal(r.callVet, "If not eating");
   assert.equal(r.confidence, "medium");
 });
