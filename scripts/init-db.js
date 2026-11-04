@@ -45,4 +45,33 @@ await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT`;
 await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN NOT NULL DEFAULT FALSE`;
 await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`;
 
-console.log("users table ready. You can sign up now.");
+await sql`
+CREATE TABLE IF NOT EXISTS crops (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  details TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`;
+
+await sql`
+CREATE TABLE IF NOT EXISTS animals (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  count INTEGER NOT NULL DEFAULT 1,
+  details TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`;
+
+await sql`
+CREATE TABLE IF NOT EXISTS checks (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL DEFAULT 'crop',
+  title TEXT NOT NULL,
+  summary TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`;
+
+console.log("tables ready: users, crops, animals, checks.");
