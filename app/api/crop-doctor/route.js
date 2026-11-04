@@ -7,6 +7,15 @@ import { describePhotoWithSpark, diagnoseWithWonder } from "../../../lib/meta.js
 
 async function ensureChecks(sql) {
   await sql`
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'farmer',
+  is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`;
+  await sql`
 CREATE TABLE IF NOT EXISTS checks (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,

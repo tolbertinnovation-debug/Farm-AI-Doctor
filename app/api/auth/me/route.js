@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { verifySession } from "../../../../lib/auth.js";
+import { verifySession, COOKIE_NAME } from "../../../../lib/auth.js";
 
 export async function GET(req) {
-  const token = req.cookies.get("farmdoctor_session")?.value;
+  const token = req.cookies.get(COOKIE_NAME)?.value;
   if (!token) {
     return NextResponse.json({ user: null }, { status: 401 });
   }
