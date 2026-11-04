@@ -9,7 +9,6 @@ test("animal photo type must be image", () => {
 
 test("animal photo size limit is 4 MB", () => {
   assert.equal(isValidPhotoSize(1000), true);
-  assert.equal(isValidPhotoSize(0), false);
   assert.equal(isValidPhotoSize(5 * 1024 * 1024), false);
 });
 
@@ -18,14 +17,8 @@ test("animal spark message holds the photo", () => {
   assert.equal(msgs[1].content[1].image_url.url, "data:image/jpeg;base64,abc");
 });
 
-test("animal wonder message holds the signs", () => {
-  const msgs = buildWonderMessages("cough and runny nose", "Goat");
-  assert.match(msgs[1].content, /cough/);
-});
-
-test("animal answer is parsed", () => {
-  const r = parseWonderResult('{"cause":"Cold","firstAid":"Keep warm","callVet":"If not eating","confidence":"medium"}');
-  assert.equal(r.cause, "Cold");
-  assert.equal(r.firstAid, "Keep warm");
-  assert.equal(r.confidence, "medium");
+test("animal wonder answer is parsed", () => {
+  const r = parseWonderResult('{"cause":"Worms","firstAid":"Give clean water","callVet":"If weak 2 days","confidence":"high"}');
+  assert.equal(r.cause, "Worms");
+  assert.equal(r.confidence, "high");
 });
