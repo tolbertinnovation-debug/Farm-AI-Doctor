@@ -27,6 +27,16 @@ export async function POST(req) {
       return NextResponse.json({ error: e.message }, { status: 500 });
     }
 
+    await sql`
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'farmer',
+  is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`;
+
     const found = await sql`SELECT id FROM users WHERE email = ${email} LIMIT 1`;
     if (found.length > 0) {
       return NextResponse.json({ error: "This email already has an account. Please sign in." }, { status: 400 });
