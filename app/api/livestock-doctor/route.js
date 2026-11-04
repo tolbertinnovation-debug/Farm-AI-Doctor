@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "../../../lib/auth.js";
 import { getSql } from "../../../lib/db.js";
 import { cleanText } from "../../../lib/validate.js";
-import { isValidPhotoType, isValidPhotoSize } from "../../../lib/livestock.js";
+import { isValidPhotoType, isValidPhotoSize } from "../../../lib/cropdoctor.js";
 import { describeAnimalPhotoWithSpark, diagnoseAnimalWithWonder } from "../../../lib/meta.js";
 
 async function ensureChecks(sql) {
@@ -42,27 +42,26 @@ export async function POST(req) {
 
   let file = null;
   let animalType = "";
-  let signs = "";
+  let description = "";
   try {
     const form = await req.formData();
-    file = form.get("photo");
-    animalType = cleanText(typeof form.get("type") === "string" ? form.get("type") : "", 40);
-    signs = cleanText(typeof form.get("signs") === "string" ? form.get("signs") : "", 1000);
+    const rawAnimal = form.get("animalType");
+    const rawDesc = form.get("description");
+    animalType = cleanText(typeof rawAnimal === "string" ? rawAnimal : "", 40);
+    description = cleanText(typeof rawDesc === "string" ? rawDesc : "", 1000);
+    const f = form.get("photo");
+    if (f && typeof f !== "string" && f.size > 0) file = f;
   } catch {
     return NextResponse.json({ error: "Could not read the form. Try again." }, { status: 400 });
   }
 
-  if (!animalType || animalType.length < 2) {
-    return NextResponse.json({ error: "Pick the animal, like Goat." }, { status: 400 });
+  if (animalType.length < 2) {
+    return NextResponse.json({ error: "Write animal type, like Goat." }, { status: 400 });
   }
-
-  const hasPhoto = file && typeof file !== "string" && file.size > 0;
-  if (!signs && !hasPhoto) {
-    return NextResponse.json({ error: "Write the signs or add a photo." }, { status: 400 });
+  if (!description && !file) {
+    return NextResponse.json({ error: "Write signs or add a photo." }, { status: 400 });
   }
-
-  let dataUrl = "";
-  if (hasPhoto) {
+  if (file) {
     if (!isValidPhotoType(file.type)) {
       return NextResponse.json({ error: "Pick a photo (JPG or PNG)." }, { status: 400 });
     }
@@ -76,17 +75,17 @@ export async function POST(req) {
   }
 
   try {
-    let seen = "";
-    if (hasPhoto) {
+    let seen = description || "No signs written.";
+    if (file) {
       const buf = Buffer.from(await file.arrayBuffer());
       const base64 = buf.toString("base64");
       const mime = file.type || "image/jpeg";
-      dataUrl = "data:" + mime + ";base64," + base64;
-      seen = await describeAnimalPhotoWithSpark(dataUrl, animalType);
+      const dataUrl = "data:" + mime + ";base64," + base64;
+      const photoSeen = await describeAnimalPhotoWithSpark(dataUrl, animalType);
+      seen = description ? photoSeen + " Farmer says: " + description : photoSeen;
     }
 
-    const fullDescription = signs + (seen ? "\nPhoto shows: " + seen : "");
-    const result = await diagnoseAnimalWithWonder(fullDescription || "No signs written.", animalType);
+    const result = await diagnoseAnimalWithWonder(seen, animalType);
 
     let checkId = null;
     try {
