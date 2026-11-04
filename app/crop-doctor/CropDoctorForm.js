@@ -63,7 +63,7 @@ export default function CropDoctorForm() {
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
         <div>
           <label htmlFor="leafPhoto" className="font-bold">Leaf photo</label>
-          <input id="leafPhoto" type="file" accept="image/*" onChange={onFile} className="mt-1 w-full rounded-xl border p-4 text-lg" />
+          <input id="leafPhoto" type="file" accept="image/*" capture="environment" onChange={onFile} className="mt-1 w-full rounded-xl border p-4 text-lg" />
         </div>
         {preview ? <img src={preview} alt="Leaf preview" className="w-full rounded-xl border" /> : null}
         <div>

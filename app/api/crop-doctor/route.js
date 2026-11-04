@@ -26,9 +26,19 @@ CREATE TABLE IF NOT EXISTS checks (
 )`;
 }
 
+async function userExists(sql, userId) {
+  const rows = await sql`SELECT id FROM users WHERE id = ${userId} LIMIT 1`;
+  return rows.length > 0;
+}
+
 export async function POST(req) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Please sign in." }, { status: 401 });
+
+  const userId = Number(user.id);
+  if (!Number.isInteger(userId)) {
+    return NextResponse.json({ error: "Please sign out and sign in again." }, { status: 401 });
+  }
 
   let file = null;
   let cropName = "";
@@ -75,9 +85,13 @@ export async function POST(req) {
     try {
       const sql = getSql();
       await ensureChecks(sql);
+      const ok = await userExists(sql, userId);
+      if (!ok) {
+        return NextResponse.json({ error: "Please sign out and sign in again." }, { status: 401 });
+      }
       const title = (cropName ? cropName + " - " : "") + result.disease;
       const summary = ("Confidence " + result.confidence + ". " + result.treatment).slice(0, 500);
-      const rows = await sql`INSERT INTO checks (user_id, kind, title, summary) VALUES (${Number(user.id)}, 'crop', ${title.slice(0, 200)}, ${summary}) RETURNING id`;
+      const rows = await sql`INSERT INTO checks (user_id, kind, title, summary) VALUES (${userId}, 'crop', ${title.slice(0, 200)}, ${summary}) RETURNING id`;
       if (rows.length > 0) checkId = rows[0].id;
     } catch {
       checkId = null;

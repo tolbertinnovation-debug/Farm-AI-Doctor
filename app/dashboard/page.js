@@ -11,6 +11,9 @@ export default async function DashboardPage() {
     redirect("/signin");
   }
   const userId = Number(user.id);
+  if (!Number.isInteger(userId)) {
+    redirect("/signin");
+  }
 
   let crops = [];
   let animals = [];

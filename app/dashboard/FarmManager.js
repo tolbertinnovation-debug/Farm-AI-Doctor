@@ -8,6 +8,7 @@ export default function FarmManager({ initialCrops, initialAnimals }) {
   const [cropName, setCropName] = useState("");
   const [cropDetails, setCropDetails] = useState("");
   const [animalType, setAnimalType] = useState("Chicken");
+  const [customAnimalType, setCustomAnimalType] = useState("");
   const [animalCount, setAnimalCount] = useState("1");
   const [animalDetails, setAnimalDetails] = useState("");
   const [msg, setMsg] = useState("");
@@ -62,7 +63,8 @@ export default function FarmManager({ initialCrops, initialAnimals }) {
     e.preventDefault();
     setMsg("");
     const n = Number(animalCount);
-    if (animalType.trim().length < 2) {
+    const finalType = animalType === "Other" ? customAnimalType.trim() : animalType.trim();
+    if (finalType.length < 2) {
       setMsg("Write animal type, like Goat.");
       return;
     }
@@ -75,7 +77,7 @@ export default function FarmManager({ initialCrops, initialAnimals }) {
       const res = await fetch("/api/animals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: animalType, count: n, details: animalDetails })
+        body: JSON.stringify({ type: finalType, count: n, details: animalDetails })
       });
       const data = await res.json();
       if (!res.ok) {
@@ -86,6 +88,7 @@ export default function FarmManager({ initialCrops, initialAnimals }) {
       setAnimals([data.animal, ...animals]);
       setAnimalDetails("");
       setAnimalCount("1");
+      setCustomAnimalType("");
       setMsg("Animal saved.");
     } catch {
       setMsg("No internet. Try again.");
@@ -159,6 +162,12 @@ export default function FarmManager({ initialCrops, initialAnimals }) {
               <option>Other</option>
             </select>
           </div>
+          {animalType === "Other" ? (
+            <div>
+              <label htmlFor="customAnimalType" className="font-bold">Which animal?</label>
+              <input id="customAnimalType" value={customAnimalType} onChange={(e) => setCustomAnimalType(e.target.value)} placeholder="Rabbit" className="mt-1 w-full rounded-xl border p-4 text-lg" />
+            </div>
+          ) : null}
           <div>
             <label htmlFor="animalCount" className="font-bold">How many</label>
             <input id="animalCount" type="number" min="1" max="100000" value={animalCount} onChange={(e) => setAnimalCount(e.target.value)} className="mt-1 w-full rounded-xl border p-4 text-lg" />
