@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 
+const ANIMAL_CHOICES = ["Goat", "Sheep", "Cow", "Pig", "Chicken", "Duck", "Rabbit", "Other"];
+
 export default function LivestockDoctorForm() {
-  const [animalType, setAnimalType] = useState("Goat");
-  const [description, setDescription] = useState("");
+  const [animal, setAnimal] = useState("Goat");
+  const [otherAnimal, setOtherAnimal] = useState("");
+  const [signs, setSigns] = useState("");
   const [photo, setPhoto] = useState(null);
   const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,24 +48,25 @@ export default function LivestockDoctorForm() {
     e.preventDefault();
     setError("");
     setResult(null);
-    if (!animalType.trim()) {
-      setError("Write the animal, like Goat.");
+    const finalAnimal = animal === "Other" ? otherAnimal.trim() : animal;
+    if (!finalAnimal || finalAnimal.length < 2) {
+      setError("Write which animal, like Goat.");
       return;
     }
-    if (!description.trim() && !photo) {
-      setError("Write the signs or add a photo.");
+    if (!photo && !signs.trim()) {
+      setError("Describe the signs or add a photo.");
       return;
     }
     setLoading(true);
     try {
       const fd = new FormData();
-      fd.append("animalType", animalType);
-      fd.append("description", description);
       if (photo) fd.append("photo", photo);
+      fd.append("animalType", finalAnimal);
+      fd.append("signs", signs.trim());
       const res = await fetch("/api/livestock-doctor", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Could not check. Try again.");
+        setError(data.error || "Could not diagnose. Try again.");
         setLoading(false);
         return;
       }
@@ -78,11 +82,21 @@ export default function LivestockDoctorForm() {
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
         <div>
           <label htmlFor="animalType" className="font-bold">Animal</label>
-          <input id="animalType" value={animalType} onChange={(e) => setAnimalType(e.target.value)} placeholder="Goat" className="mt-1 w-full rounded-xl border p-4 text-lg" />
+          <select id="animalType" value={animal} onChange={(e) => setAnimal(e.target.value)} className="mt-1 w-full rounded-xl border p-4 text-lg">
+            {ANIMAL_CHOICES.map((a) => (
+              <option key={a} value={a}>{a}</option>
+            ))}
+          </select>
         </div>
+        {animal === "Other" ? (
+          <div>
+            <label htmlFor="otherAnimal" className="font-bold">Which animal?</label>
+            <input id="otherAnimal" value={otherAnimal} onChange={(e) => setOtherAnimal(e.target.value)} placeholder="Rabbit" className="mt-1 w-full rounded-xl border p-4 text-lg" />
+          </div>
+        ) : null}
         <div>
           <label htmlFor="signs" className="font-bold">Signs you see</label>
-          <textarea id="signs" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Not eating, cough, hot body for 2 days" rows="3" className="mt-1 w-full rounded-xl border p-4 text-lg" />
+          <textarea id="signs" value={signs} onChange={(e) => setSigns(e.target.value)} placeholder="Not eating, cough, hot body for 2 days" rows={3} className="mt-1 w-full rounded-xl border p-4 text-lg" />
         </div>
         <div>
           <label htmlFor="animalPhoto" className="font-bold">Photo (optional)</label>

@@ -34,6 +34,7 @@ async function userExists(sql, userId) {
 export async function POST(req) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Please sign in." }, { status: 401 });
+
   const userId = Number(user.id);
   if (!Number.isInteger(userId)) {
     return NextResponse.json({ error: "Please sign out and sign in again." }, { status: 401 });
@@ -41,23 +42,24 @@ export async function POST(req) {
 
   let file = null;
   let animalType = "";
-  let description = "";
+  let signs = "";
   try {
     const form = await req.formData();
-    file = form.get("photo");
-    animalType = cleanText(typeof form.get("animalType") === "string" ? form.get("animalType") : "", 40);
-    description = cleanText(typeof form.get("description") === "string" ? form.get("description") : "", 1000);
-    if (typeof file === "string") file = null;
-    if (file && file.size === 0) file = null;
+    const rawFile = form.get("photo");
+    if (rawFile && typeof rawFile !== "string" && rawFile.size > 0) {
+      file = rawFile;
+    }
+    animalType = cleanText(String(form.get("animalType") || form.get("type") || ""), 40);
+    signs = cleanText(String(form.get("signs") || form.get("description") || ""), 2000);
   } catch {
     return NextResponse.json({ error: "Could not read the form. Try again." }, { status: 400 });
   }
 
-  if (!animalType || animalType.length < 2) {
-    return NextResponse.json({ error: "Write the animal, like Goat." }, { status: 400 });
+  if (!animalType) {
+    return NextResponse.json({ error: "Pick the animal, like Goat." }, { status: 400 });
   }
-  if (!description && !file) {
-    return NextResponse.json({ error: "Write the signs or add a photo." }, { status: 400 });
+  if (!file && !signs) {
+    return NextResponse.json({ error: "Describe the signs or add a photo." }, { status: 400 });
   }
   if (file) {
     if (!isValidPhotoType(file.type)) {
@@ -67,6 +69,7 @@ export async function POST(req) {
       return NextResponse.json({ error: "Photo is too big. Pick one under 4 MB." }, { status: 400 });
     }
   }
+
   if (!process.env.META_API_KEY) {
     return NextResponse.json({ error: "Missing META_API_KEY. Add it in .env.local, then try again." }, { status: 500 });
   }
@@ -80,8 +83,8 @@ export async function POST(req) {
       const dataUrl = "data:" + mime + ";base64," + base64;
       seen = await describeAnimalPhotoWithSpark(dataUrl, animalType);
     }
-    const fullSigns = (description ? description : "") + (seen ? (description ? "\nSeen in photo: " : "") + seen : "");
-    const result = await diagnoseAnimalWithWonder(fullSigns, animalType);
+    const fullDescription = (signs ? signs + "\n" : "") + (seen ? "Photo shows: " + seen : "");
+    const result = await diagnoseAnimalWithWonder(fullDescription || "sick animal", animalType);
 
     let checkId = null;
     try {
@@ -112,6 +115,6 @@ export async function POST(req) {
     if (msg.includes("META_API_KEY")) {
       return NextResponse.json({ error: msg }, { status: 500 });
     }
-    return NextResponse.json({ error: "Could not check the animal. Check internet and try again." }, { status: 500 });
+    return NextResponse.json({ error: "Could not diagnose. Check internet and try again." }, { status: 500 });
   }
 }
