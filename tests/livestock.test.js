@@ -23,8 +23,9 @@ test("animal wonder message holds the signs", () => {
   assert.match(msgs[1].content, /not eating/);
 });
 
-test("animal wonder answer is parsed", () => {
-  const r = parseWonderResult('{"cause":"Worms","firstAid":"Give clean water","callVet":"If weak after 2 days","confidence":"medium"}');
+test("animal answer is parsed", () => {
+  const r = parseWonderResult('{"cause":"Worms","firstAid":"Give clean water","callVet":"If weak for 2 days","confidence":"medium"}');
   assert.equal(r.cause, "Worms");
+  assert.equal(r.callVet, "If weak for 2 days");
   assert.equal(r.confidence, "medium");
 });

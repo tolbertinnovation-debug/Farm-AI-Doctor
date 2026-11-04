@@ -5,7 +5,7 @@ import { useState } from "react";
 const ANIMAL_CHOICES = ["Goat", "Sheep", "Cow", "Pig", "Chicken", "Duck", "Rabbit", "Other"];
 
 export default function LivestockDoctorForm() {
-  const [animal, setAnimal] = useState("Goat");
+  const [animalType, setAnimalType] = useState("Goat");
   const [otherAnimal, setOtherAnimal] = useState("");
   const [signs, setSigns] = useState("");
   const [photo, setPhoto] = useState(null);
@@ -48,25 +48,25 @@ export default function LivestockDoctorForm() {
     e.preventDefault();
     setError("");
     setResult(null);
-    const finalAnimal = animal === "Other" ? otherAnimal.trim() : animal;
-    if (!finalAnimal || finalAnimal.length < 2) {
-      setError("Write which animal, like Goat.");
+    const finalType = animalType === "Other" ? otherAnimal.trim() : animalType;
+    if (!finalType || finalType.length < 2) {
+      setError("Pick the animal, or write which animal.");
       return;
     }
-    if (!photo && !signs.trim()) {
-      setError("Describe the signs or add a photo.");
+    if (!signs.trim() && !photo) {
+      setError("Write the signs or add a photo.");
       return;
     }
     setLoading(true);
     try {
       const fd = new FormData();
+      fd.append("type", finalType);
+      fd.append("signs", signs);
       if (photo) fd.append("photo", photo);
-      fd.append("animalType", finalAnimal);
-      fd.append("signs", signs.trim());
       const res = await fetch("/api/livestock-doctor", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Could not diagnose. Try again.");
+        setError(data.error || "Could not check. Try again.");
         setLoading(false);
         return;
       }
@@ -82,13 +82,13 @@ export default function LivestockDoctorForm() {
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
         <div>
           <label htmlFor="animalType" className="font-bold">Animal</label>
-          <select id="animalType" value={animal} onChange={(e) => setAnimal(e.target.value)} className="mt-1 w-full rounded-xl border p-4 text-lg">
+          <select id="animalType" value={animalType} onChange={(e) => setAnimalType(e.target.value)} className="mt-1 w-full rounded-xl border p-4 text-lg">
             {ANIMAL_CHOICES.map((a) => (
               <option key={a} value={a}>{a}</option>
             ))}
           </select>
         </div>
-        {animal === "Other" ? (
+        {animalType === "Other" ? (
           <div>
             <label htmlFor="otherAnimal" className="font-bold">Which animal?</label>
             <input id="otherAnimal" value={otherAnimal} onChange={(e) => setOtherAnimal(e.target.value)} placeholder="Rabbit" className="mt-1 w-full rounded-xl border p-4 text-lg" />
@@ -113,7 +113,7 @@ export default function LivestockDoctorForm() {
           <p className="text-xl font-bold">Likely cause: {result.cause}</p>
           <p className="mt-1">Sure: {result.confidence}</p>
           {result.firstAid ? <p className="mt-2 text-lg">First aid: {result.firstAid}</p> : null}
-          {result.callVet ? <p className="mt-2 text-lg">Call a vet when: {result.callVet}</p> : null}
+          {result.callVet ? <p className="mt-2 text-lg">Call a vet: {result.callVet}</p> : null}
           {result.seen ? <p className="mt-2">Seen: {result.seen}</p> : null}
           <p className="mt-2 text-sm">Saved to Recent checks on your farm page.</p>
         </div>

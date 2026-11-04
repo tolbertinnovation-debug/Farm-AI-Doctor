@@ -45,23 +45,24 @@ export async function POST(req) {
   let signs = "";
   try {
     const form = await req.formData();
-    const rawFile = form.get("photo");
-    if (rawFile && typeof rawFile !== "string" && rawFile.size > 0) {
-      file = rawFile;
-    }
-    animalType = cleanText(String(form.get("animalType") || form.get("type") || ""), 40);
-    signs = cleanText(String(form.get("signs") || form.get("description") || ""), 2000);
+    file = form.get("photo");
+    animalType = cleanText(typeof form.get("type") === "string" ? form.get("type") : "", 40);
+    signs = cleanText(typeof form.get("signs") === "string" ? form.get("signs") : "", 1000);
   } catch {
     return NextResponse.json({ error: "Could not read the form. Try again." }, { status: 400 });
   }
 
-  if (!animalType) {
+  if (!animalType || animalType.length < 2) {
     return NextResponse.json({ error: "Pick the animal, like Goat." }, { status: 400 });
   }
-  if (!file && !signs) {
-    return NextResponse.json({ error: "Describe the signs or add a photo." }, { status: 400 });
+
+  const hasPhoto = file && typeof file !== "string" && file.size > 0;
+  if (!signs && !hasPhoto) {
+    return NextResponse.json({ error: "Write the signs or add a photo." }, { status: 400 });
   }
-  if (file) {
+
+  let dataUrl = "";
+  if (hasPhoto) {
     if (!isValidPhotoType(file.type)) {
       return NextResponse.json({ error: "Pick a photo (JPG or PNG)." }, { status: 400 });
     }
@@ -76,15 +77,16 @@ export async function POST(req) {
 
   try {
     let seen = "";
-    if (file) {
+    if (hasPhoto) {
       const buf = Buffer.from(await file.arrayBuffer());
       const base64 = buf.toString("base64");
       const mime = file.type || "image/jpeg";
-      const dataUrl = "data:" + mime + ";base64," + base64;
+      dataUrl = "data:" + mime + ";base64," + base64;
       seen = await describeAnimalPhotoWithSpark(dataUrl, animalType);
     }
-    const fullDescription = (signs ? signs + "\n" : "") + (seen ? "Photo shows: " + seen : "");
-    const result = await diagnoseAnimalWithWonder(fullDescription || "sick animal", animalType);
+
+    const fullDescription = signs + (seen ? "\nPhoto shows: " + seen : "");
+    const result = await diagnoseAnimalWithWonder(fullDescription || "No signs written.", animalType);
 
     let checkId = null;
     try {
@@ -115,6 +117,6 @@ export async function POST(req) {
     if (msg.includes("META_API_KEY")) {
       return NextResponse.json({ error: msg }, { status: 500 });
     }
-    return NextResponse.json({ error: "Could not diagnose. Check internet and try again." }, { status: 500 });
+    return NextResponse.json({ error: "Could not check the animal. Check internet and try again." }, { status: 500 });
   }
 }
