@@ -1,0 +1,26 @@
+import { NextResponse } from "next/server";
+import { getSql } from "../../../../lib/db.js";
+import { getCurrentUser } from "../../../../lib/auth.js";
+
+export async function DELETE(req, { params }) {
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ error: "Please sign in." }, { status: 401 });
+  const id = Number(params.id);
+  if (!Number.isInteger(id)) return NextResponse.json({ error: "Not found." }, { status: 404 });
+  try {
+    const sql = getSql();
+    await sql`
+CREATE TABLE IF NOT EXISTS crops (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  details TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`;
+    const rows = await sql`DELETE FROM crops WHERE id = ${id} AND user_id = ${Number(user.id)} RETURNING id`;
+    if (rows.length === 0) return NextResponse.json({ error: "Not found." }, { status: 404 });
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    return NextResponse.json({ error: "Could not remove." }, { status: 500 });
+  }
+}

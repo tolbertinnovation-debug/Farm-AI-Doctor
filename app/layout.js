@@ -17,7 +17,7 @@ export default function RootLayout({ children }) {
         <header className="bg-green-700 text-white">
           <div className="mx-auto flex max-w-md items-center justify-between px-4 py-4">
             <span className="text-xl font-bold">🌱 FarmDoctor</span>
-            <a href="/signin" className="rounded-lg bg-white px-4 py-2 font-bold text-green-800">
+            <a href="/signin" className="rounded-lg bg-white px-5 py-3 font-bold text-green-800">
               Sign in
             </a>
           </div>

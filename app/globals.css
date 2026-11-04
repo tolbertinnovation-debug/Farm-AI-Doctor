@@ -6,6 +6,18 @@ body {
   font-size: 16px;
 }
 
+html, body {
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+}
+
 input, select, button {
   min-height: 48px;
+}
+
+li p {
+  overflow-wrap: anywhere;
 }
