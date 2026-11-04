@@ -26,12 +26,14 @@ export default function CropDoctorForm() {
       setPhoto(null);
       setPreview("");
       setError("Pick a photo (JPG or PNG).");
+      try { e.target.value = ""; } catch {}
       return;
     }
     if (f.size > 4 * 1024 * 1024) {
       setPhoto(null);
       setPreview("");
       setError("Photo is too big. Pick one under 4 MB.");
+      try { e.target.value = ""; } catch {}
       return;
     }
     setPhoto(f);
@@ -72,7 +74,7 @@ export default function CropDoctorForm() {
           <label htmlFor="leafPhoto" className="font-bold">Leaf photo</label>
           <input id="leafPhoto" type="file" accept="image/*" capture="environment" onChange={onFile} className="mt-1 w-full rounded-xl border p-4 text-lg" />
         </div>
-        {preview ? <img src={preview} alt="Leaf preview" className="w-full rounded-xl border" /> : null}
+        {preview ? <img src={preview} alt="Leaf preview" className="w-full rounded-xl border" style={{ maxHeight: "320px", objectFit: "cover" }} /> : null}
         <div>
           <label htmlFor="cropName" className="font-bold">Crop name (optional)</label>
           <input id="cropName" value={cropName} onChange={(e) => setCropName(e.target.value)} placeholder="Cassava" className="mt-1 w-full rounded-xl border p-4 text-lg" />

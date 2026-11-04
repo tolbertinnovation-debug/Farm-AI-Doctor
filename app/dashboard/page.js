@@ -4,6 +4,7 @@ import { getCurrentUser } from "../../lib/auth.js";
 import { getSql } from "../../lib/db.js";
 import SignOutButton from "./SignOutButton.js";
 import FarmManager from "./FarmManager.js";
+import { formatCheckDate } from "../../lib/format.js";
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
@@ -62,7 +63,7 @@ CREATE TABLE IF NOT EXISTS checks (
     const checkRows = await sql`SELECT id, kind, title, summary, created_at FROM checks WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 5`;
     crops = cropRows.map((c) => ({ id: c.id, name: c.name, details: c.details || "" }));
     animals = animalRows.map((a) => ({ id: a.id, type: a.type, count: a.count, details: a.details || "" }));
-    checks = checkRows.map((r) => ({ id: r.id, kind: r.kind, title: r.title, summary: r.summary || "", created_at: String(r.created_at || "") }));
+    checks = checkRows.map((r) => ({ id: r.id, kind: r.kind, title: r.title, summary: r.summary || "", created_at: formatCheckDate(r.created_at) }));
   } catch (e) {
     dbError = "Could not load farm. Check internet and DATABASE_URL, then reload.";
   }

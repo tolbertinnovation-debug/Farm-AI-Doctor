@@ -199,7 +199,7 @@ export default function FarmManager({ initialCrops, initialAnimals }) {
         )}
       </div>
 
-      {msg ? <p className="rounded-xl bg-green-50 p-3">{msg}</p> : null}
+      {msg ? <p role="status" aria-live="polite" className="rounded-xl bg-green-50 p-3">{msg}</p> : null}
     </div>
   );
 }
